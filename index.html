@@ -14,7 +14,7 @@ header{background:var(--navy);color:white;padding:30px clamp(20px,5vw,44px)}.eye
 button{font:inherit;cursor:pointer} .btn{border:1px solid var(--teal);border-radius:10px;background:var(--teal);color:#fff;padding:12px 19px;font-weight:700}.btn:hover{filter:brightness(.93)}.btn:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.btn.secondary{background:white;color:var(--navy);border-color:#adbfc5}.btn[disabled]{opacity:.45;cursor:not-allowed}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.actions .right{margin-left:auto}
 .progress{height:7px;background:#dfe9eb;border-radius:99px;overflow:hidden;margin:10px 0 24px}.progress span{display:block;height:100%;background:var(--teal);transition:width .2s}
-h2{font-size:1.5rem;line-height:1.3;margin:8px 0 18px}h3{margin:22px 0 7px;font-size:1.08rem}.opt{display:block;padding:15px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:10px;cursor:pointer;background:#fff}.opt:has(input:checked){border-color:var(--teal);background:#eef7f7}.opt:hover{border-color:var(--teal)}.opt input{margin-right:10px;accent-color:var(--teal)}
+h2{font-size:1.5rem;line-height:1.3;margin:8px 0 18px}h3{margin:22px 0 7px;font-size:1.08rem}.opt{display:block;padding:15px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:10px;cursor:pointer;background:#fff}.opt:has(input:checked){border:2px solid var(--teal);background:#d9f1ee;box-shadow:inset 4px 0 0 var(--teal);font-weight:650;padding:14.5px}.opt:hover{border-color:var(--teal)}.opt input{margin-right:10px;accent-color:var(--teal);width:18px;height:18px;vertical-align:middle}.selection-hint{margin:10px 0 0;font-size:.86rem;color:var(--muted)}
 .result-intro{padding:20px;background:var(--soft);border-radius:12px;border-left:5px solid var(--teal);margin-bottom:18px}.result-intro h2{margin-top:3px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.meter{padding:14px;border:1px solid var(--line);border-radius:12px}.meter strong{display:block}.meter .track{height:9px;background:#dce8e9;border-radius:99px;margin:12px 0 6px;overflow:hidden}.meter .track span{height:100%;display:block;background:var(--teal)}.note{background:#fff9e8;border:1px solid #eddb9d;border-radius:10px;padding:15px;margin:20px 0}
 ul{padding-left:20px}li{margin:8px 0}.footer{border-top:1px solid var(--line);padding:20px clamp(20px,5vw,44px);font-size:.83rem;color:var(--muted)}.hidden{display:none!important}
 @media(max-width:600px){.three{grid-template-columns:1fr}.actions .right{margin-left:0}.btn{width:100%}}
@@ -39,7 +39,7 @@ ul{padding-left:20px}li{margin:8px 0}.footer{border-top:1px solid var(--line);pa
 <section id="quiz" class="hidden" aria-live="polite">
 <p id="counter" class="small"></p><div class="progress" aria-hidden="true"><span id="bar"></span></div>
 <span id="category" class="pill"></span><h2 id="question"></h2>
-<div id="choices" role="radiogroup" aria-label="Answer choices"></div>
+<div id="choices" role="radiogroup" aria-label="Answer choices"></div><p id="selectionHint" class="selection-hint" aria-live="polite">Select one answer to continue.</p>
 <div class="actions"><button class="btn secondary" id="back">← Back</button><button class="btn right" disabled id="next">Next →</button></div>
 </section>
 <section id="results" class="hidden" aria-live="polite">
@@ -50,8 +50,8 @@ ul{padding-left:20px}li{margin:8px 0}.footer{border-top:1px solid var(--line);pa
 <h3>What we'd recommend exploring next</h3><ul id="recommendations"></ul>
 <div class="note"><strong>Audience or community?</strong><p id="audienceNote"></p></div>
 <h3>Potential next step</h3><p id="nextStep"></p>
-<div class="actions"><button class="btn" id="print">Save results as PDF</button><a class="btn secondary" id="consult" href="mailto:lori@lorigoldman.me?subject=Community%20assessment%20%E2%80%94%20let%E2%80%99s%20talk">Discuss my results with Lori ↗</a><button class="btn secondary" id="restart">Retake assessment</button></div>
-<p class="small no-print">The consultation link opens your email app. Nothing is sent unless you choose to send a message; your answers are not attached automatically.</p>
+<div class="actions"><button class="btn" id="print">Save results as PDF</button><a class="btn secondary" id="consult" href="https://lorigoldman.me/contact" target="_blank" rel="noopener noreferrer">Discuss my results with Lori ↗</a><button class="btn secondary" id="restart">Retake assessment</button></div>
+<p class="small no-print">The consultation link opens the contact form on lorigoldman.me. Your quiz answers are not transmitted or attached automatically; share only what you choose.</p>
 </section>
 </div>
 <div class="footer">© 2026 Lori Goldman. All rights reserved. · Community Opportunity & Readiness Assessment · Educational and directional; not a guarantee of outcomes. No email capture or analytics are enabled.</div>
@@ -104,8 +104,8 @@ let idx=0,ans=Array(Q.length).fill(null);
 const el=id=>document.getElementById(id);
 function show(id){for(const s of ["intro","quiz","results"])el(s).classList.toggle("hidden",s!==id);window.scrollTo({top:0,behavior:"smooth"})}
 function render(){let q=Q[idx];el("counter").textContent=`Question ${idx+1} of ${Q.length}`;el("bar").style.width=`${100*idx/Q.length}%`;el("category").textContent=labels[q.d];el("question").textContent=q.q;el("choices").innerHTML="";
-q.a.forEach(([label],i)=>{let x=document.createElement("label");x.className="opt";const input=document.createElement("input");input.type="radio";input.name="answer";input.value=i;input.checked=ans[idx]===i;input.addEventListener("change",()=>{ans[idx]=i;el("next").disabled=false});x.append(input,document.createTextNode(label));el("choices").append(x)});
-el("back").disabled=idx===0;el("next").disabled=ans[idx]===null;el("next").textContent=idx===Q.length-1?"See my results →":"Next →"}
+q.a.forEach(([label],i)=>{let x=document.createElement("label");x.className="opt";const input=document.createElement("input");input.type="radio";input.name="answer";input.value=i;input.checked=ans[idx]===i;input.addEventListener("change",()=>{ans[idx]=i;el("next").disabled=false;el("selectionHint").textContent="Answer selected. You can continue.";});x.append(input,document.createTextNode(label));el("choices").append(x)});
+el("selectionHint").textContent=ans[idx]===null?"Select one answer to continue.":"Answer selected. You can continue.";el("back").disabled=idx===0;el("next").disabled=ans[idx]===null;el("next").textContent=idx===Q.length-1?"See my results →":"Next →"}
 el("begin").onclick=()=>{idx=0;render();show("quiz")};
 el("back").onclick=()=>{if(idx>0){idx--;render()}};
 el("next").onclick=()=>{if(ans[idx]===null)return;if(idx<Q.length-1){idx++;render()}else results()};
